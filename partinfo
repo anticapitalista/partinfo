@@ -1,4 +1,112 @@
 #!/bin/bash
+version="partinfo-1.0 (Oct. 09, 2015)"
+
+# Check that user is root.
+[ $(id -u) -eq 0 ] || { echo -e $"\n\t You need to be root!\n" ; exit 1 ; }
+
+show_help () {
+	printf "$help_text"
+	exit 0
+}
+
+show_version () {
+	printf "\n$version\n\n"
+	exit 0
+}
+
+help_text="
+	Usage:  `basename $0` <device> [options]
+	
+	Display the NAME, SIZE, FSTYPE(by name), FSTYPE (by code), LABEL information
+        of the partitions of the selected device (/dev/sda, /dev/sdb, /dev/sdc, etc)        
+	
+	valid options:
+                -e, --efi-filter	remove data about Microsoft reserved partitions,
+					Recovery partitions, and EFI System partitions
+					from the `basename $0` command's output
+
+		-h, --help		show this help text
+
+		-r, --real-type-name	Display the actual fstype name output by the
+					lsblk and sgdisk commands. When this option isn't
+					used the following fstypes are displayed as \"Linux\"
+					btrfs, ext2, ext3, ext4, jfs, nilfs2, reiser4, reiserfs, ufs, xfs.
+                                        Also vfat is shown as \"FAT32\", and hfsplus as \"HPFS\". 
+ 
+		-v, --version	display the version information
+
+"
+
+if [ $# = 0 ]; then show_help
+else
+
+while [[ $1 == -* ]]; do
+	case "$1" in
+		-e|--efi-filter)
+			printf "\t add option: $1 after <device> i.e. `basename $0` /dev/sda $1\n\n"
+			printf "\t Try:  $0 -h for full help. \n\n"
+			exit 1 ;;
+			
+		-h|--help)
+			show_help ;;
+
+		-r|--real-type-name)
+			printf "\t add option: $1 after <device> i.e. `basename $0` /dev/sda $1\n\n"
+			printf "\t Try:  $0 -h for full help. \n\n"
+			exit 1 ;;
+		
+		-v|--version)
+                        show_version ;;
+		
+		*) 
+			printf "\t invalid option: $1 \n\n"
+			printf "\t Try:  $0 -h for full help. \n\n"
+			exit 1 ;;
+    esac
+done
+
+
+while [[ $2 == -* ]]; do
+	case "$2" in
+		-e|--efi-filter)
+			break ;;
+
+		-h|--help)
+			show_help ;;
+
+		-r|--real-type-name)
+			break ;;
+		
+		-v|--version)
+                        show_version ;;
+		
+		*) 
+			printf "\t invalid option: $2 \n\n"
+			printf "\t Try:  $0 -h for full help. \n\n"
+			exit 1 ;;
+    esac
+done
+
+while [[ $3 == -* ]]; do
+	case "$3" in
+		-e|--efi-filter)
+			break ;;
+
+		-h|--help)
+			show_help ;;
+
+		-r|--real-type-name)
+			break ;;
+		
+		-v|--version)
+                        show_version ;;
+		
+		*) 
+			printf "\t invalid option: $2 \n\n"
+			printf "\t Try:  $0 -h for full help. \n\n"
+			exit 1 ;;
+    esac
+done
 
 IntermediateResult=$(paste <(lsblk -b -P -o NAME,SIZE,FSTYPE,LABEL $1 | sed 's/""/"~~~~~"/g' | cut -f2,4,6,8 -d\" | sed 's/ /~.~/g' | sed 's/"/ /g' | grep -E ^$(cut -c6- <<<$1)[0-9]+) <(for i in $(cat /proc/partitions | awk '{print $4}' | grep -Eo $(basename $1)[0-9]+ | grep -Eo [0-9]+);do sgdisk -p $1 | grep '  '$i' ' | awk '{print $6}';sgdisk -p $1 | grep -q '  '$i' ' || echo ~~~~; done) | awk '{OFMT="%.0f"};{print "/dev/"$1,$2/1024,$3,$5,$4}' | grep -Ev $1[0-9]+[\ ]+'1 ')
 
@@ -44,3 +152,4 @@ fi
 sed 's| /dev|\n/dev|g' <<<$IntermediateResult | awk '{print $1,$2,$3,$4,$5}' | column -t
 
 exit 0
+fi
