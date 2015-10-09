@@ -1,1 +1,1 @@
-# mxpartinfo
+# mx-partinfo
