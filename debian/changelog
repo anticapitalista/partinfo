@@ -1,0 +1,5 @@
+mx-partinfo (1.0mx150+1) mx; urgency=low
+
+  * Initial release (Closes: #nnnn)  <nnnn is the bug number of your ITP>
+
+ -- Kent Mathern <maintainer@mepiscommunity.org>  Fri, 09 Oct 2015 10:56:12 -0400
