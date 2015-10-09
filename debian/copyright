@@ -1,5 +1,5 @@
 Format: http://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
-Upstream-Name: mx-partinfo
+Upstream-Name: partinfo
 Source: <url://example.com>
 
 Files: *

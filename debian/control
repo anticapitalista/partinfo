@@ -1,4 +1,4 @@
-Source: mx-partinfo
+Source: partinfo
 Section: unknown
 Priority: extra
 Maintainer: Kent Mathern <maintainer@mepiscommunity.org>
@@ -8,15 +8,15 @@ Homepage: <insert the upstream URL, if relevant>
 #Vcs-Git: git://git.debian.org/collab-maint/mx-partinfo.git
 #Vcs-Browser: http://git.debian.org/?p=collab-maint/mx-partinfo.git;a=summary
 
-Package: mx-partinfo
+Package: partinfo
 Architecture: all
 Depends: ${misc:Depends}, bsdmainutils, coreutils, gawk, gdisk, grep, sed, util-linux
 Description: Tool to list GPT and msdos partition info in similar format
  A tool (partinfo) to list information about the selected
- device. Lists the following information about the device:
- NAME, SIZE, FSTYPE(by name), FSTYPE(by code), LABEL.
+ device's partitions. Lists the following information about
+ the partitions: NAME, SIZE, FSTYPE(name), FSTYPE(code), LABEL
  .
  The partinfo script was created to list information 
- about GPT and msdos partitions. Output is formatted the
- same for both types unlike fdisk which formats it's 
+ about GPT and msdos drive partitions. Output is formatted
+ the same for both types unlike fdisk which formats it's 
  output slightly different for each type.   
