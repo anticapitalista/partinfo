@@ -1,5 +1,5 @@
 Source: partinfo
-Section: unknown
+Section: utils
 Priority: extra
 Maintainer: Kent Mathern <maintainer@mepiscommunity.org>
 Build-Depends: debhelper (>= 8.0.0)
