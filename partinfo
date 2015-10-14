@@ -113,17 +113,8 @@ IntermediateResult=$(paste <(lsblk -b -P -o NAME,SIZE,FSTYPE,LABEL $1 | sed 's/"
 if [ "$2" = "--efi-filter" ] || [ "$2" = "-e" ] || [ "$3" = "--efi-filter" ] || [ "$3" = "-e" ]
 
   then
-    #exclude iso9600
-    IntermediateResult="$(sed 's| /dev|\n/dev|g' <<<$IntermediateResult | grep -v ' iso9660 ')"
-
-    #exclude EFI System partition
-    IntermediateResult="$(sed 's| /dev|\n/dev|g' <<<$IntermediateResult | grep -v ' EF00 ')"
-
-    #exclude Microsoft reserved partition
-    IntermediateResult="$(sed 's| /dev|\n/dev|g' <<<$IntermediateResult | grep -v ' 0C01 ')"
-
-    #exclude Microsoft recovery partition(s)
-    IntermediateResult="$(sed 's| /dev|\n/dev|g' <<<$IntermediateResult | grep -v ' 2700 ')"
+    #exclude iso9660, Microsoft reserved partitions (0C01), Microsoft reserved partitions (2700) and EFI System partitions (EF00) 
+    IntermediateResult="$(sed 's| /dev|\n/dev|g' <<<$IntermediateResult | awk '{if ($3 == "iso9660" || $4 == "0C01" || $4 == "2700" || $4 == "EF00"); else print $0}')"
 
   else
     :
