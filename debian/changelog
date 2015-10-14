@@ -1,3 +1,11 @@
+partinfo (1.0.1mx150+1) mx; urgency=medium
+
+  * changed from "unknown" to "utils" section in debian/control
+
+  * script updated to 1.0.1
+
+ -- Kent Mathern <maintainer@mepiscommunity.org>  Wed, 14 Oct 2015 15:05:06 -0400
+
 partinfo (1.0mx150+1) mx; urgency=low
 
   * Initial release (Closes: #nnnn)  <nnnn is the bug number of your ITP>

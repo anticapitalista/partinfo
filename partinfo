@@ -1,5 +1,5 @@
 #!/bin/bash
-version="partinfo-1.0 (Oct. 09, 2015)"
+version="partinfo-1.0.1 (Oct. 14, 2015)"
 
 # Check that user is root.
 [ $(id -u) -eq 0 ] || { echo -e $"\n\t You need to be root!\n" ; exit 1 ; }
@@ -16,10 +16,10 @@ show_version () {
 
 help_text="
 	Usage:  `basename $0` <device> [options]
-	
+
 	Display the NAME, SIZE, FSTYPE(by name), FSTYPE (by code), LABEL information
-        of the partitions of the selected device (/dev/sda, /dev/sdb, /dev/sdc, etc)        
-	
+        of the partitions of the selected device (/dev/sda, /dev/sdb, /dev/sdc, etc)
+
 	valid options:
                 -e, --efi-filter	remove data about Microsoft reserved partitions,
 					Recovery partitions, and EFI System partitions
@@ -31,8 +31,8 @@ help_text="
 					lsblk and sgdisk commands. When this option isn't
 					used the following fstypes are displayed as \"Linux\"
 					btrfs, ext2, ext3, ext4, jfs, nilfs2, reiser4, reiserfs, ufs, xfs.
-                                        Also vfat is shown as \"FAT32\", and hfsplus as \"HPFS\". 
- 
+                                        Also vfat is shown as \"FAT32\", and hfsplus as \"HPFS\".
+
 		-v, --version	display the version information
 
 "
@@ -46,7 +46,7 @@ while [[ $1 == -* ]]; do
 			printf "\t add option: $1 after <device> i.e. `basename $0` /dev/sda $1\n\n"
 			printf "\t Try:  $0 -h for full help. \n\n"
 			exit 1 ;;
-			
+
 		-h|--help)
 			show_help ;;
 
@@ -54,11 +54,11 @@ while [[ $1 == -* ]]; do
 			printf "\t add option: $1 after <device> i.e. `basename $0` /dev/sda $1\n\n"
 			printf "\t Try:  $0 -h for full help. \n\n"
 			exit 1 ;;
-		
+
 		-v|--version)
                         show_version ;;
-		
-		*) 
+
+		*)
 			printf "\t invalid option: $1 \n\n"
 			printf "\t Try:  $0 -h for full help. \n\n"
 			exit 1 ;;
@@ -76,11 +76,11 @@ while [[ $2 == -* ]]; do
 
 		-r|--real-type-name)
 			break ;;
-		
+
 		-v|--version)
                         show_version ;;
-		
-		*) 
+
+		*)
 			printf "\t invalid option: $2 \n\n"
 			printf "\t Try:  $0 -h for full help. \n\n"
 			exit 1 ;;
@@ -97,34 +97,25 @@ while [[ $3 == -* ]]; do
 
 		-r|--real-type-name)
 			break ;;
-		
+
 		-v|--version)
                         show_version ;;
-		
-		*) 
+
+		*)
 			printf "\t invalid option: $2 \n\n"
 			printf "\t Try:  $0 -h for full help. \n\n"
 			exit 1 ;;
     esac
 done
 
-IntermediateResult=$(paste <(lsblk -b -P -o NAME,SIZE,FSTYPE,LABEL $1 | sed 's/""/"~~~~~"/g' | cut -f2,4,6,8 -d\" | sed 's/ /~.~/g' | sed 's/"/ /g' | grep -E ^$(cut -c6- <<<$1)[0-9]+) <(for i in $(cat /proc/partitions | awk '{print $4}' | grep -Eo $(basename $1)[0-9]+ | grep -Eo [0-9]+);do sgdisk -p $1 | grep '  '$i' ' | awk '{print $6}';sgdisk -p $1 | grep -q '  '$i' ' || echo ~~~~; done) | awk '{OFMT="%.0f"};{print "/dev/"$1,$2/1024,$3,$5,$4}' | grep -Ev $1[0-9]+[\ ]+'1 ')
+IntermediateResult=$(paste <(lsblk -b -P -o NAME,SIZE,FSTYPE,LABEL $1 | sort -V | sed 's/""/"~~~~~"/g' | cut -f2,4,6,8 -d\" | sed 's/ /~.~/g' | sed 's/"/ /g' | grep -E ^[hsv][d][a-z]+[0-9]+[\ ]) <(for i in $(cat /proc/partitions | awk '{print $4}' | grep $(basename $1) | grep -Eo [0-9]+$ | sort -V);do sgdisk -p $1 | awk '{if ($1 == "'$i'") print $6}'; sgdisk -p $1 | grep -q '  '$i' ' || echo ~~~~; done) | awk '{OFMT="%.0f"};{print "/dev/"$1,$2/1024,$3,$5,$4}' | grep -Ev $1[0-9]+[\ ]+'1 ')
 
 if [ "$2" = "--efi-filter" ] || [ "$2" = "-e" ] || [ "$3" = "--efi-filter" ] || [ "$3" = "-e" ]
 
   then
-    #exclude iso9600
-    IntermediateResult="$(sed 's| /dev|\n/dev|g' <<<$IntermediateResult | grep -v ' iso9660 ')"
+    #exclude iso9660, Microsoft reserved partitions (0C01), Microsoft reserved partitions (2700) and EFI System partitions (EF00) 
+    IntermediateResult="$(sed 's| /dev|\n/dev|g' <<<$IntermediateResult | awk '{if ($3 == "iso9660" || $4 == "0C01" || $4 == "2700" || $4 == "EF00"); else print $0}')"
 
-    #exclude EFI System partition
-    IntermediateResult="$(sed 's| /dev|\n/dev|g' <<<$IntermediateResult | grep -v ' EF00 ')"
-
-    #exclude Microsoft reserved partition
-    IntermediateResult="$(sed 's| /dev|\n/dev|g' <<<$IntermediateResult | grep -v ' 0C01 ')"
-
-    #exclude Microsoft recovery partition(s)
-    IntermediateResult="$(sed 's| /dev|\n/dev|g' <<<$IntermediateResult | grep -v ' 2700 ')"
-    
   else
     :
 fi
@@ -132,19 +123,19 @@ fi
 if [ "$2" = "--real-type-name" ] || [ "$2" = "-r" ] || [ "$3" = "--real-type-name" ] || [ "$3" = "-r" ]
   then
     :
-    
+
   else
     #for Linux GPT Partitions (8300) strip off the partition type (ext3, ext4, etc.) so they're named just 'Linux 8300'
     IntermediateResult="$(sed 's| /dev|\n/dev|g' <<<$IntermediateResult | sed 's/\(.*\) \(.*\) 8300 /\1 Linux 8300 /')"
 
-    #rename hfsplus to HPFS    
+    #rename hfsplus to HPFS
     IntermediateResult="$(sed 's| /dev|\n/dev|g' <<<$IntermediateResult | sed 's/hfsplus/HPFS/')"
 
-    #rename vfat to FAT32  
+    #rename vfat to FAT32
     IntermediateResult="$(sed 's| /dev|\n/dev|g' <<<$IntermediateResult | sed 's/vfat/FAT32/')"
 
     #Linux GPT Partitions created with older versions of GParted are identified as a 'Basic data partition' (0700),
-    # the same as NTFS partitions, so rename them to 'Linux 8300'   
+    # the same as NTFS partitions, so rename them to 'Linux 8300'
     IntermediateResult="$(sed 's| /dev|\n/dev|g' <<<$IntermediateResult | \
                         sed -r 's/(btrfs|ext2|ext3|ext4|jfs|nilfs2|reiser4|reiserfs|ufs|xfs) 0700/Linux 8300/')"
 fi
