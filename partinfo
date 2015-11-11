@@ -108,7 +108,7 @@ while [[ $3 == -* ]]; do
     esac
 done
 
-IntermediateResult=$(paste <(lsblk -b -P -o NAME,SIZE,FSTYPE,LABEL $1 | sort -V | sed 's/""/"~~~~~"/g' | cut -f2,4,6,8 -d\" | sed 's/ /~.~/g' | sed 's/"/ /g' | grep -E ^[hsv][d][a-z]+[0-9]+[\ ]) <(for i in $(cat /proc/partitions | awk '{print $4}' | grep $(basename $1) | grep -Eo [0-9]+$ | sort -V);do sgdisk -p $1 | awk '{if ($1 == "'$i'") print $6}'; sgdisk -p $1 | grep -q '  '$i' ' || echo ~~~~; done) | awk '{OFMT="%.0f"};{print "/dev/"$1,$2/1024,$3,$5,$4}' | grep -Ev $1[0-9]+[\ ]+'1 ')
+IntermediateResult=$(paste <(lsblk -b -P -o NAME,SIZE,FSTYPE,LABEL $1 | xargs echo -e | sed 's/ NAME=/\nNAME=/g' | sed 's/=/="/g' | sed 's/ SIZE/" SIZE/' | sed 's/ FSTYPE/" FSTYPE/' | sed 's/ LABEL/" LABEL/' | sed 's/$/"/g' | sort -V | sed 's/""/"~~~~~"/g' | cut -f2,4,6,8 -d\" | sed 's/ /~.~/g' | sed 's/"/ /g' | grep -E ^[hsv][d][a-z]+[0-9]+[\ ]) <(for i in $(cat /proc/partitions | awk '{print $4}' | grep $(basename $1) | grep -Eo [0-9]+$ | sort -V);do sgdisk -p $1 | awk '{if ($1 == "'$i'") print $6}'; sgdisk -p $1 | grep -q '  '$i' ' || echo ~~~~; done) | awk '{OFMT="%.0f"};{print "/dev/"$1,$2/1024,$3,$5,$4}' | grep -Ev $1[0-9]+[\ ]+'1 ')
 
 if [ "$2" = "--efi-filter" ] || [ "$2" = "-e" ] || [ "$3" = "--efi-filter" ] || [ "$3" = "-e" ]
 
