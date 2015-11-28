@@ -1,3 +1,10 @@
+partinfo (1.0.3mx150+1) mx; urgency=medium
+
+  * added partition-info
+
+ -- anticapitalista <antiX@operamail.com>  Sat, 28 Nov 2015 19:00:12 +0200
+
+
 partinfo (1.0.2mx150+1) mx; urgency=medium
 
   * script updated to 1.0.2, fixes Unicode related problem with kanji labels 
